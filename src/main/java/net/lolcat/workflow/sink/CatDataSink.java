@@ -6,6 +6,7 @@ import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.model.UpdateOptions;
 import net.lolcat.workflow.model.CatData;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
@@ -15,15 +16,25 @@ import java.util.Arrays;
 
 public class CatDataSink extends RichSinkFunction<CatData> {
 
-    private final MongoClient client;
+    private final MongoConfig mongoConfig;
+
+    private transient MongoClient mongoClient;
 
 
-    public CatDataSink(String host, int port, String login, String db, String password) {
+    public CatDataSink(MongoConfig mongoConfig) {
+        this.mongoConfig = mongoConfig;
+    }
 
-        ServerAddress serverAddress = new ServerAddress(host, port);
-        MongoCredential credential = MongoCredential.createCredential(login, db, password.toCharArray());
 
-        client = new MongoClient(serverAddress, Arrays.asList(credential));
+    @Override
+    public void open(Configuration parameters) throws Exception {
+        super.open(parameters);
+
+        ServerAddress serverAddress = new ServerAddress(mongoConfig.getHost(), mongoConfig.getPort());
+        MongoCredential credential = MongoCredential.createCredential(mongoConfig.getLogin(), mongoConfig.getDb(), mongoConfig.getPassword().toCharArray());
+
+        mongoClient = new MongoClient(serverAddress, Arrays.asList(credential));
+
     }
 
     @Override
@@ -49,7 +60,7 @@ public class CatDataSink extends RichSinkFunction<CatData> {
         update.append("_id", new BsonString(value.getId()));
 
 
-        client.getDatabase("cat").getCollection("catdata").replaceOne(update, document, new UpdateOptions().upsert(true));
+        mongoClient.getDatabase("cat").getCollection("catdata").replaceOne(update, document, new UpdateOptions().upsert(true));
 
     }
 }

@@ -1,11 +1,15 @@
 package net.lolcat.workflow;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
 import net.lolcat.workflow.mapper.CatMapper;
 import net.lolcat.workflow.model.CatData;
 import net.lolcat.workflow.model.CatMoves;
 import net.lolcat.workflow.model.Temperature;
 import net.lolcat.workflow.sink.CatDataSink;
+import net.lolcat.workflow.sink.MongoConfig;
 import net.lolcat.workflow.sink.TemperatureSink;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.common.functions.FlatMapFunction;
@@ -21,22 +25,35 @@ import org.apache.flink.streaming.connectors.rabbitmq.common.RMQConnectionConfig
 import org.apache.flink.streaming.util.serialization.SimpleStringSchema;
 import org.apache.flink.util.Collector;
 
+import java.util.Arrays;
+
 
 public class SocketStreamCat {
 
     public static void main(String[] args) throws Exception {
 
+
+
+
         String rabbitHost = StringUtils.defaultString(System.getProperty("rabbitmq.host"), "127.0.0.1");
         int rabbitPort = System.getProperty("rabbitmq.port") != null ? Integer.valueOf(System.getProperty("rabbitmq.port")) : 5672;
-        String rabbitLogin = StringUtils.defaultString(System.getProperty(System.getProperty("rabbitmq.login"), "guest"));
-        String rabbitPassword = StringUtils.defaultString(System.getProperty(System.getProperty("rabbitmq.password"), "guest"));
+        String rabbitLogin = StringUtils.defaultString(System.getProperty("rabbitmq.login"), "guest");
+        String rabbitPassword = StringUtils.defaultString(System.getProperty("rabbitmq.password"), "guest");
 
         String mongoHost = StringUtils.defaultString(System.getProperty("mongo.host"), "127.0.0.1");
         int mongoPort = System.getProperty("mongo.port") != null ? Integer.valueOf(System.getProperty("mongo.port")) : 27017;
-        String mongoLogin = StringUtils.defaultString(System.getProperty(System.getProperty("mongo.login"), "guest"));
-        String mongoPassword = StringUtils.defaultString(System.getProperty(System.getProperty("mongo.password"), "guest"));
+        String mongoLogin = StringUtils.defaultString(System.getProperty("mongo.login"), "guest");
+        String mongoPassword = StringUtils.defaultString(System.getProperty("mongo.password"), "guest");
 
         String catDB = "cat";
+
+
+        ServerAddress serverAddress = new ServerAddress(mongoHost, mongoPort);
+        MongoCredential credential = MongoCredential.createCredential(mongoLogin, catDB, mongoPassword.toCharArray());
+
+        MongoClient client = new MongoClient(serverAddress, Arrays.asList(credential));
+
+        MongoConfig mongoConfig = new MongoConfig(mongoHost,mongoPort,catDB,mongoLogin,mongoPassword);
 
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -54,8 +71,8 @@ public class SocketStreamCat {
         RMQSource<String> amqpSource = new RMQSource<>(connectionConfig, "cat.data", new SimpleStringSchema());
         RMQSink<String> catmovesSink = new RMQSink<>(connectionConfig, "cat.moves", new SimpleStringSchema());
 
-        CatDataSink catData = new CatDataSink(mongoHost, mongoPort, catDB, mongoLogin, mongoPassword);
-        TemperatureSink temperatureSink = new TemperatureSink(mongoHost, mongoPort, catDB, mongoLogin, mongoPassword);
+        CatDataSink catData = new CatDataSink(mongoConfig);
+        TemperatureSink temperatureSink = new TemperatureSink(mongoConfig);
 
         DataStreamSource<String> stringDataSource = env.addSource(amqpSource);
 

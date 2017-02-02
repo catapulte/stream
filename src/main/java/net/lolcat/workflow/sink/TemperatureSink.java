@@ -1,9 +1,11 @@
 package net.lolcat.workflow.sink;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import net.lolcat.workflow.model.Temperature;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.bson.Document;
 
@@ -11,25 +13,39 @@ import java.util.Arrays;
 
 public class TemperatureSink extends RichSinkFunction<Temperature> {
 
-    private final MongoClient client;
+    private final MongoConfig mongoConfig;
+
+    private transient MongoClient mongoClient;
 
 
-    public TemperatureSink(String host, int port, String login, String db, String password) {
+    public TemperatureSink(MongoConfig mongoConfig) {
+        this.mongoConfig = mongoConfig;
+    }
 
-        ServerAddress serverAddress = new ServerAddress(host, port);
-        MongoCredential credential = MongoCredential.createCredential(login, db, password.toCharArray());
+    @Override
+    public void open(Configuration parameters) throws Exception {
+        super.open(parameters);
 
-        client = new MongoClient(serverAddress, Arrays.asList(credential));
+        ServerAddress serverAddress = new ServerAddress(mongoConfig.getHost(), mongoConfig.getPort());
+        MongoCredential credential = MongoCredential.createCredential(mongoConfig.getLogin(), mongoConfig.getDb(), mongoConfig.getPassword().toCharArray());
+
+        mongoClient = new MongoClient(serverAddress, Arrays.asList(credential));
+
     }
 
     @Override
     public void invoke(Temperature value) throws Exception {
 
         Document document = new Document();
-        document.append("position", value.getPosition());
+
+        BasicDBList positions = new BasicDBList();
+        positions.add(value.getPosition()[0]);
+        positions.add(value.getPosition()[1]);
+        document.append("position", positions);
+
         document.append("temperature", value.getTemperature());
         document.append("humidity", value.getTemperature());
 
-        client.getDatabase("cat").getCollection("temperature").insertOne(document);
+        mongoClient.getDatabase("cat").getCollection("temperature").insertOne(document);
     }
 }
