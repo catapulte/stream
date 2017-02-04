@@ -25,14 +25,13 @@ import org.apache.flink.streaming.connectors.rabbitmq.common.RMQConnectionConfig
 import org.apache.flink.streaming.util.serialization.SimpleStringSchema;
 import org.apache.flink.util.Collector;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 
 public class SocketStreamCat {
 
     public static void main(String[] args) throws Exception {
-
-
 
 
         String rabbitHost = StringUtils.defaultString(System.getProperty("rabbitmq.host"), "127.0.0.1");
@@ -53,7 +52,7 @@ public class SocketStreamCat {
 
         MongoClient client = new MongoClient(serverAddress, Arrays.asList(credential));
 
-        MongoConfig mongoConfig = new MongoConfig(mongoHost,mongoPort,catDB,mongoLogin,mongoPassword);
+        MongoConfig mongoConfig = new MongoConfig(mongoHost, mongoPort, catDB, mongoLogin, mongoPassword);
 
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -69,7 +68,14 @@ public class SocketStreamCat {
 
 
         RMQSource<String> amqpSource = new RMQSource<>(connectionConfig, "cat.data", new SimpleStringSchema());
-        RMQSink<String> catmovesSink = new RMQSink<>(connectionConfig, "cat.moves", new SimpleStringSchema());
+        RMQSink<String> catmovesSink = new RMQSink(connectionConfig, "cat.moves", new SimpleStringSchema()) {
+
+            protected void setupQueue() throws IOException {
+                channel.queueDeclare(queueName, true, false, false, null);
+            }
+
+        };
+
 
         CatDataSink catData = new CatDataSink(mongoConfig);
         TemperatureSink temperatureSink = new TemperatureSink(mongoConfig);
