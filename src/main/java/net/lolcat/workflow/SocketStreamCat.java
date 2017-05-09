@@ -36,13 +36,13 @@ public class SocketStreamCat {
 
         String rabbitHost = StringUtils.defaultString(System.getProperty("rabbitmq.host"), "127.0.0.1");
         int rabbitPort = System.getProperty("rabbitmq.port") != null ? Integer.valueOf(System.getProperty("rabbitmq.port")) : 5672;
-        String rabbitLogin = StringUtils.defaultString(System.getProperty("rabbitmq.login"), "guest");
-        String rabbitPassword = StringUtils.defaultString(System.getProperty("rabbitmq.password"), "guest");
+        String rabbitLogin = StringUtils.defaultString(System.getProperty("rabbitmq.user"), "guest");
+        String rabbitPassword = StringUtils.defaultString(System.getProperty("rabbitmq.pass"), "guest");
 
         String mongoHost = StringUtils.defaultString(System.getProperty("mongo.host"), "127.0.0.1");
         int mongoPort = System.getProperty("mongo.port") != null ? Integer.valueOf(System.getProperty("mongo.port")) : 27017;
-        String mongoLogin = StringUtils.defaultString(System.getProperty("mongo.login"), "guest");
-        String mongoPassword = StringUtils.defaultString(System.getProperty("mongo.password"), "guest");
+        String mongoLogin = StringUtils.defaultString(System.getProperty("mongo.user"), "guest");
+        String mongoPassword = StringUtils.defaultString(System.getProperty("mongo.pass"), "guest");
 
         String catDB = "cat";
 
