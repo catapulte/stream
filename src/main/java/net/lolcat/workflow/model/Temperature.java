@@ -1,10 +1,8 @@
 package net.lolcat.workflow.model;
 
-import lombok.Data;
 import org.mongodb.morphia.annotations.Id;
 
 
-@Data
 public class Temperature {
 
     public Temperature() {
@@ -25,4 +23,36 @@ public class Temperature {
     private double temperature;
 
     private double humidity;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public double[] getPosition() {
+        return position;
+    }
+
+    public void setPosition(double[] position) {
+        this.position = position;
+    }
+
+    public double getTemperature() {
+        return temperature;
+    }
+
+    public void setTemperature(double temperature) {
+        this.temperature = temperature;
+    }
+
+    public double getHumidity() {
+        return humidity;
+    }
+
+    public void setHumidity(double humidity) {
+        this.humidity = humidity;
+    }
 }

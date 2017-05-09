@@ -1,11 +1,7 @@
 package net.lolcat.workflow.sink;
 
-
-import lombok.Data;
-
 import java.io.Serializable;
 
-@Data
 public class MongoConfig  implements Serializable{
 
     private String host;
@@ -27,6 +23,46 @@ public class MongoConfig  implements Serializable{
         this.port = port;
         this.db = db;
         this.password = password;
+        this.login = login;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public String getDb() {
+        return db;
+    }
+
+    public void setDb(String db) {
+        this.db = db;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public void setLogin(String login) {
         this.login = login;
     }
 }
