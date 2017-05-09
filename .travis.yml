@@ -1,0 +1,14 @@
+language: java
+jdk:
+- oraclejdk8
+addons:
+  ssh_known_hosts: lolcat.passoire.net
+before_deploy:
+- openssl aes-256-cbc -K $encrypted_90f444697d21_key -iv $encrypted_90f444697d21_iv -in id_rsa.enc -out id_rsa -d
+- chmod 600 id_rsa
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: scp -i id_rsa target/stream-*.jar lolcat@lolcat.passoire.net:~/stream.jar
+  on:
+    branch: master
