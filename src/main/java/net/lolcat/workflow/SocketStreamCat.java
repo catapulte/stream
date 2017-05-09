@@ -11,10 +11,10 @@ import net.lolcat.workflow.model.Temperature;
 import net.lolcat.workflow.sink.CatDataSink;
 import net.lolcat.workflow.sink.MongoConfig;
 import net.lolcat.workflow.sink.TemperatureSink;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.ReduceFunction;
+import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -33,18 +33,19 @@ public class SocketStreamCat {
 
     public static void main(String[] args) throws Exception {
 
+        ParameterTool parameter = ParameterTool.fromPropertiesFile("stream.properties");
 
-        String rabbitHost = StringUtils.defaultString(System.getProperty("rabbitmq.host"), "127.0.0.1");
-        int rabbitPort = System.getProperty("rabbitmq.port") != null ? Integer.valueOf(System.getProperty("rabbitmq.port")) : 5672;
-        String rabbitLogin = StringUtils.defaultString(System.getProperty("rabbitmq.user"), "guest");
-        String rabbitPassword = StringUtils.defaultString(System.getProperty("rabbitmq.pass"), "guest");
+        String rabbitHost = parameter.get("rabbitmq.host", "127.0.0.1");
+        int rabbitPort = parameter.getInt("rabbitmq.port", 5672);
+        String rabbitLogin = parameter.get("rabbitmq.user", "guest");
+        String rabbitPassword = parameter.get("rabbitmq.pass", "guest");
 
-        String mongoHost = StringUtils.defaultString(System.getProperty("mongo.host"), "127.0.0.1");
-        int mongoPort = System.getProperty("mongo.port") != null ? Integer.valueOf(System.getProperty("mongo.port")) : 27017;
-        String mongoLogin = StringUtils.defaultString(System.getProperty("mongo.user"), "guest");
-        String mongoPassword = StringUtils.defaultString(System.getProperty("mongo.pass"), "guest");
+        String mongoHost = parameter.get("mongo.host", "127.0.0.1");
+        int mongoPort = parameter.getInt("mongo.port",27017);
+        String mongoLogin =  parameter.get("mongo.user", "guest");
+        String mongoPassword =  parameter.get("mongo.pass", "guest");
 
-        String catDB = "cat";
+        String catDB = parameter.get("mongo.db", "cat");
 
 
         ServerAddress serverAddress = new ServerAddress(mongoHost, mongoPort);
