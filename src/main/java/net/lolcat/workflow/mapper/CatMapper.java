@@ -10,11 +10,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class CatMapper implements MapFunction<String, CatData> {
-    private FastDateFormat dateFormat = FastDateFormat.getInstance("dd/MM/yyyy'@'HH:mm:ss.SSS");
+    private FastDateFormat dateFormat = FastDateFormat.getInstance("d/M/yyyy'@'HH:mm:ss");
 
     @Override
     public CatData map(String rawData) throws Exception {
-        String regexp = "#(.*)\\|(.*)\\|(.*)\\|(.*)\\|(.*)\\|(.*)\\|(.*)\\|(.*)\\|(.*)\\|(.*)#";
+        // 1|4806.9043N|140.4209W|6/6/2017@21:5:3|20|51|4.25
+        String regexp = "(.*)\\|(.*)\\|(.*)\\|(.*)\\|(.*)\\|(.*)\\|(.*)";
 
         Pattern pattern = Pattern.compile(regexp);
         Matcher matcher = pattern.matcher(rawData);
@@ -30,27 +31,17 @@ public class CatMapper implements MapFunction<String, CatData> {
             DecimalCoord decimalCoord = new DecimalCoord(lat, lng);
             cat.setPosition(decimalCoord.getDecimalCoord());
 
-            String angle = matcher.group(4);
-            cat.setAngle(Double.parseDouble(angle));
-
-            String alt = matcher.group(5);
-            cat.setAltitude(Double.parseDouble(alt));
-
-
-            String satellitesNb = matcher.group(6);
-            cat.setSatelliteNb(Integer.parseInt(satellitesNb));
-
-            String ts = matcher.group(7);
+            String ts = matcher.group(4);
             Date parse = dateFormat.parse(ts);
             cat.setTimestamp(parse.getTime());
 
-            String temperature = matcher.group(8);
+            String temperature = matcher.group(5);
             cat.setTemperature(Double.parseDouble(temperature));
 
-            String humidity = matcher.group(9);
+            String humidity = matcher.group(6);
             cat.setHumidity(Double.parseDouble(humidity));
 
-            double vbat = Double.valueOf(matcher.group(10));
+            double vbat = Double.valueOf(matcher.group(7));
             cat.setVbat(vbat);
 
             return cat;
